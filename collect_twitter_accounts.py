@@ -21,7 +21,7 @@ interval = 900
 def main():
 	conn = psycopg2.connect('dbname=twitter_feeds user = postgres password=password')
 	cur = conn.cursor()
-	county_query = 'select county from counties limit 10;'
+	county_query ='select distinct(county) from counties;'
 	counties = cur.execute(county_query)
 	print(counties)
 	county = counties.fetchone()
