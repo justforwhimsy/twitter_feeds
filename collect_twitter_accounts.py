@@ -1,7 +1,7 @@
 
+import psycopg2
 import tweepy
 import logging
-import psycopg2
 import time
 
 consumer_key = '6WqCLElvMLYiQDnaLtcRMNm5Z'
@@ -18,35 +18,42 @@ logging.basicConfig(filename='counties.log',  level = logging.INFO, format='%(as
 api = tweepy.API(auth)
 # API has a 15 minute call interval
 interval = 900
+rate_limit = 180
 def main():
 	conn = psycopg2.connect('dbname=twitter_feeds user = postgres password=password')
 	cur = conn.cursor()
 	county_query ='select distinct(county) from counties;'
-	counties = cur.execute(county_query)
-	print(counties)
-	county = counties.fetchone()
+	_t = cur.execute(county_query)
+	# county = counties.fetchone()
 	calls = 0
+	county = cur.fetchone()[0]
 	while county:
 		#search for county results in twitter.
-		state_time = time.time()
-		if calls < 450:
-			cursor = get_search_results(county)
-			count = 0
-			for page in cursor:
-				if count >= 100:
-					break
-				for user in page:
-					screen_name = user.screen_name
-					name = user.name
-					uid = user.id_str
-					location = user.location
-					if location != "":
-						count +=1
-						print('Name: ' + name + ' UID: ' + uid + " Screen Name: " + screen_name + ' Location: ' + location)
-		else:
-			#Need to find out how much time has elapsed between calls and wait until it's reached the 15 minute limit timeframe
+		print(county)
+		start_time = time.time()
+		print(str(calls) + "calls made")
+		if calls == (rate_limit - 1):
+			print('450 call limit reached. Sleeping')
+			tts = interval - (time.time() - start_time)
+			print('Sleeping for ' + str(tts) + " seconds")
 			time.sleep(interval - (time.time() - start_time))
 
+		cursor = get_search_results(county)
+		calls +=1
+		count = 0
+		for page in cursor:
+			if count >= 100:
+				break
+			for user in page:
+				screen_name = user.screen_name
+				name = user.name
+				uid = user.id_str
+				location = user.location
+				if location != "":
+					count +=1
+					print('Name: ' + name + ' UID: ' + uid + " Screen Name: " + screen_name + ' Location: ' + location)
+		print(str(count))
+		county = cur.fetchone()[0]
 				
 
 def get_search_results(query):
