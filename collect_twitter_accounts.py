@@ -4,10 +4,10 @@ import tweepy
 import logging
 import time
 
-consumer_key = '6WqCLElvMLYiQDnaLtcRMNm5Z'
-consumer_token= 'Fh1firIXdBtRCIAYe7ojNjAhkqfP3LYmCzEgixUu2Pu4eyY9Wr'
-access_token ='17298291-DoYnEMgJ91RIUFzhfguTeLp53GdiKk9qt162RVSrm'
-access_token_secret = 'RLFWzMvbtfhnh8M72ozMxyNLCgFOcrMCJP7IU31T7ka1M'
+consumer_key = ''
+consumer_token= ''
+access_token =''
+access_token_secret = ''
 auth = tweepy.OAuthHandler(consumer_key, consumer_token)
 auth.set_access_token(access_token, access_token_secret)
 
