@@ -12,7 +12,7 @@ with open('credentials.json') as json_creds:
 	access_token =d['twitter']['access_token']
 	access_token_secret = d['twitter']['access_token_secret']
 	dbname= d['db']['db']
-	user = d['db']['user']
+	dbuser = d['db']['user']
 	password = d['db']['password']
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_token)
@@ -27,7 +27,7 @@ api = tweepy.API(auth)
 interval = 900
 rate_limit = 80
 def main():
-	conn = psycopg2.connect('dbname=twitter_feeds user = postgres password=password')
+	conn = psycopg2.connect('dbname=%s user = %s password=%s'% (dbname, dbuser, password))
 	cur = conn.cursor()
 	county_query ='select distinct(county) from counties;'
 	_t = cur.execute(county_query)
