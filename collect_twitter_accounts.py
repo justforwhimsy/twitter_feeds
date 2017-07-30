@@ -3,11 +3,18 @@ import psycopg2
 import tweepy
 import logging
 import time
+import json
 
-consumer_key = '6WqCLElvMLYiQDnaLtcRMNm5Z'
-consumer_token= 'Fh1firIXdBtRCIAYe7ojNjAhkqfP3LYmCzEgixUu2Pu4eyY9Wr'
-access_token ='17298291-DoYnEMgJ91RIUFzhfguTeLp53GdiKk9qt162RVSrm'
-access_token_secret = 'RLFWzMvbtfhnh8M72ozMxyNLCgFOcrMCJP7IU31T7ka1M'
+with open('credentials.json') as json_creds:
+	d = json.load(json_creds)
+	consumer_key = d['twitter']['consumer_key']
+	consumer_token= d['twitter']['consumer_token']
+	access_token =d['twitter']['access_token']
+	access_token_secret = d['twitter']['access_token_secret']
+	dbname= d['db']['db']
+	user = d['db']['user']
+	password = d['db']['password']
+
 auth = tweepy.OAuthHandler(consumer_key, consumer_token)
 auth.set_access_token(access_token, access_token_secret)
 
@@ -18,7 +25,7 @@ logging.basicConfig(filename='counties.log',  level = logging.INFO, format='%(as
 api = tweepy.API(auth)
 # API has a 15 minute call interval
 interval = 900
-rate_limit = 180
+rate_limit = 80
 def main():
 	conn = psycopg2.connect('dbname=twitter_feeds user = postgres password=password')
 	cur = conn.cursor()
@@ -51,7 +58,10 @@ def main():
 				location = user.location
 				if location != "":
 					count +=1
-					print('Name: ' + name + ' UID: ' + uid + " Screen Name: " + screen_name + ' Location: ' + location)
+					try:
+						print('Name: ' + name + ' UID: ' + uid + " Screen Name: " + screen_name + ' Location: ' + location)
+					except:
+						print("There's some hinky  encoding here")
 		print(str(count))
 		county = cur.fetchone()[0]
 				
