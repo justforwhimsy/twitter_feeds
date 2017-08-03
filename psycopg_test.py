@@ -21,16 +21,21 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 start = api.rate_limit_status()
-tweets = api.reverse_geocode(40.81,
-					-73.04,
-					100,
-					'neighborhood',
-					200)
-for tweet in tweets:
-	print(tweet)
-print(start)
+# tweets = api.reverse_geocode(40.81,
+# 					-73.04,
+# 					100,
+# 					'neighborhood',
+# 					200)
+# for tweet in tweets:
+# 	print(tweet)
+me = api.me()
+print(me)
+str_id = me.id_str
+# mid = me[]
+followers = api.followers_ids(str_id)
+for f in followers:
+	print(f)
 end = api.rate_limit_status()
-print(end)
 base_url = 'https://api.twitter.com/1.1/'
 requests.get(base_url + 'search/tweets.json')
 # Check interval timing
