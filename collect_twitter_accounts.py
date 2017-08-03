@@ -5,6 +5,7 @@ import logging
 import time
 import json
 
+#credentials stored in a json file so I don't commit code with sensative data
 with open('credentials.json') as json_creds:
 	d = json.load(json_creds)
 	consumer_key = d['twitter']['consumer_key']
@@ -18,36 +19,43 @@ with open('credentials.json') as json_creds:
 auth = tweepy.OAuthHandler(consumer_key, consumer_token)
 auth.set_access_token(access_token, access_token_secret)
 
-logging.basicConfig(filename='counties.log',  level = logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s')
-
-
+#save logging information to a separate log file
+logging.basicConfig(filename='counties.log',  level = logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s')
 
 api = tweepy.API(auth)
+
 # API has a 15 minute call interval
 interval = 900
-rate_limit = 80
+
 def main():
 	conn = psycopg2.connect('dbname=%s user = %s password=%s'% (dbname, dbuser, password))
 	cur = conn.cursor()
 	county_query ='select distinct(county) from counties;'
 	_t = cur.execute(county_query)
-	# county = counties.fetchone()
-	calls = 0
 	county = cur.fetchone()[0]
-	while county:
-		#search for county results in twitter.
-		print(county)
-		start_time = time.time()
-		print(str(calls) + "calls made")
-		if calls == (rate_limit - 1):
-			print('450 call limit reached. Sleeping')
-			tts = interval - (time.time() - start_time)
-			print('Sleeping for ' + str(tts) + " seconds")
-			time.sleep(interval - (time.time() - start_time))
 
+	start_time = time.time()
+	while county:
+		#collect the rate limit statuses to ensure we don't perform too many calls in a given timespan
+		rate_status = api.rate_limit_status()
+		logging.debug(rate_status)
+		rate_limit = rate_status['resources']['application']['/application/rate_limit_status']['remaining']
+		search_limit = rate_status['resources']['users']['/users/search']['remaining']
+		logging.debug('Rate Limit = ' +str(rate_limit))
+		logging.debug('User search limit = ' + str(search_limit))
+		
+		#if we reached the rate limit, we want to wait sleep through the remainder of the 15 minute window
+		if rate_limit == 0 or search_limit == 0:
+			tts = interval - (time.time() - start_time)
+			logging.info('Call limit reached. Sleeping for ' + str(tts) + " seconds")
+			time.sleep(tts + 10)#adding an extra 10 seconds to ensure we don't start early
+			start_time = time.time()
+
+		#search for county results in twitter.
+		logging.info('Retrieving accounts associated with ' + county)
 		cursor = get_search_results(county)
-		calls +=1
 		count = 0
+		#run through each section
 		for page in cursor:
 			if count >= 100:
 				break
@@ -59,10 +67,10 @@ def main():
 				if location != "":
 					count +=1
 					try:
-						print('Name: ' + name + ' UID: ' + uid + " Screen Name: " + screen_name + ' Location: ' + location)
-					except:
-						print("There's some hinky  encoding here")
-		print(str(count))
+						logging.debug('Name: ' + name + ' UID: ' + uid + " Screen Name: " + screen_name + ' Location: ' + location)
+					except Exception as e:
+						logging.error("Something is wrong with the content retrieved for the feed")
+						logging.error(e)
 		county = cur.fetchone()[0]
 				
 
