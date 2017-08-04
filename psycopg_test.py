@@ -28,16 +28,20 @@ start = api.rate_limit_status()
 # 					200)
 # for tweet in tweets:
 # 	print(tweet)
+
+### Collect Followers for my user based on the ID ###
 me = api.me()
+
 print(me)
 str_id = me.id_str
-# mid = me[]
 followers = api.followers_ids(str_id)
 for f in followers:
 	print(f)
 end = api.rate_limit_status()
 base_url = 'https://api.twitter.com/1.1/'
 requests.get(base_url + 'search/tweets.json')
+
+### Check to see how time works ###
 # Check interval timing
 # start_time = time.time()
 # print(str(start_time))
@@ -50,7 +54,7 @@ requests.get(base_url + 'search/tweets.json')
 # Check Twitter connection
 # r = requests.get('')
 
-#Connection to the counties table to test connection and retrieval
+### Connection to the counties table to test connection and retrieval ###
 # conn = psycopg2.connect('dbname=%s user = %s password=%s' % (dbname, dbuser, password))
 
 # cur = conn.cursor()

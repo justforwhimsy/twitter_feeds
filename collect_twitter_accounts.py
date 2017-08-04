@@ -63,6 +63,11 @@ def main():
 				screen_name = user.screen_name
 				name = user.name
 				uid = user.id_str
+				### TODO Collect followers related to a page
+				followers = get_followers(uid)
+				### Create method for verifyng the location of the feed we searched for and the followers
+				#location = get_location(user)
+				# for follower in followers:
 				location = user.location
 				if location != "":
 					count +=1
@@ -72,7 +77,15 @@ def main():
 						logging.error("Something is wrong with the content retrieved for the feed")
 						logging.error(e)
 		county = cur.fetchone()[0]
-				
+	
+def get_location(user):
+	###TODO
+	# parse out location if they have one - This is entered by the user so can vary 
+	# check location of tweets if that is enabled
+	# 			
+def get_followers(uid):
+	followers = api.followers_ids(uid)
+	return followers
 
 def get_search_results(query):
 	cursor = tweepy.Cursor(api.search_users,q =query).pages(10)
