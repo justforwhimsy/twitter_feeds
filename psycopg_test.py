@@ -18,9 +18,11 @@ with open('credentials.json') as json_creds:
 auth = tweepy.OAuthHandler(consumer_key, consumer_token)
 auth.set_access_token(access_token, access_token_secret)
 
-api = tweepy.API(auth)
+# api = tweepy.API(auth)
 
-start = api.rate_limit_status()
+# start = api.rate_limit_status()
+# if "': 0" in start:
+# 	print('Rate reached for something`')
 # tweets = api.reverse_geocode(40.81,
 # 					-73.04,
 # 					100,
@@ -30,16 +32,16 @@ start = api.rate_limit_status()
 # 	print(tweet)
 
 ### Collect Followers for my user based on the ID ###
-me = api.me()
+# me = api.me()
 
-print(me)
-str_id = me.id_str
-followers = api.followers_ids(str_id)
-for f in followers:
-	print(f)
-end = api.rate_limit_status()
-base_url = 'https://api.twitter.com/1.1/'
-requests.get(base_url + 'search/tweets.json')
+# print(me)
+# str_id = me.id_str
+# followers = api.followers_ids(str_id)
+# for f in followers:
+# 	print(f)
+# end = api.rate_limit_status()
+# base_url = 'https://api.twitter.com/1.1/'
+# requests.get(base_url + 'search/tweets.json')
 
 ### Check to see how time works ###
 # Check interval timing
@@ -55,18 +57,21 @@ requests.get(base_url + 'search/tweets.json')
 # r = requests.get('')
 
 ### Connection to the counties table to test connection and retrieval ###
-# conn = psycopg2.connect('dbname=%s user = %s password=%s' % (dbname, dbuser, password))
+conn = psycopg2.connect('dbname=%s user = %s password=%s' % (dbname, dbuser, password))
 
-# cur = conn.cursor()
+cur = conn.cursor()
 
-# cur.execute('select distinct(county) from counties;')
-# result = cur.fetchone()
-# count = 1
-# while result:
-# 	print(result[0])
-# 	result = cur.fetchone()
-# 	count+= 1
-# print(count)
+query = """SELECT DISTINCT(county) FROM counties WHERE state ilike '%s' AND (primary_city ilike '%s' OR acceptable_cities ilike '%%%s%%')""" % ('OR', 'Portland', 'Portland')
+print(query)
+#query = 'select distinct(county) from counties;'
+cur.execute(query)
+result = cur.fetchone()
+count = 0
+while result:
+	count+= 1
+	print(result[0])
+	result = cur.fetchone()
+print(count)
 
 # print(psycopg2.__file__)
 
